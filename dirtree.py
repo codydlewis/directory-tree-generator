@@ -29,6 +29,15 @@ class Directory:
     def __repr__(self) -> str:
         return f"Directory('{self.name}', {len(self.children)} children)"
 
+    def __getitem__(self, key: str) -> Directory:
+        for child in self.children:
+            if child.name == key:
+                return child
+        raise KeyError(
+            f"No subdirectory has the name "
+            f"'{key}' in '{self.name}'"
+        )
+
     @staticmethod
     def _tree_builder(obj: Dict, /) -> Directory:
         # pop children array from input dictionary object
@@ -110,7 +119,7 @@ class Directory:
 def main():
     test_directory = Directory.init_from_json("templates.json", "test")
 
-    print(test_directory)
+    print(test_directory["Test A"]["T"])
 
 
 if __name__ == "__main__":
