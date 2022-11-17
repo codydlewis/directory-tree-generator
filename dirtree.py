@@ -30,6 +30,9 @@ class Directory:
         return f"Directory('{self.name}', {len(self.children)} children)"
 
     def __getitem__(self, key: str) -> Directory:
+        """Get child Directory object by `name` attibute of children.
+        Guaranteed unique."""
+
         for child in self.children:
             if child.name == key:
                 return child
@@ -40,6 +43,8 @@ class Directory:
 
     @staticmethod
     def _tree_builder(obj: Dict, /) -> Directory:
+        """Recursively construct Directory objects from dictionaries."""
+
         # pop children array from input dictionary object
         obj_children = obj.pop("children", [])
         # create new Directory object from remaining keys in obj
@@ -52,6 +57,45 @@ class Directory:
 
     @classmethod
     def init_from_json(cls, filename: str, root_name: str) -> Directory:
+        """
+        Initialise Directory object from JSON file. Adds all subsequent
+        descendent Directory objects using recursion.
+
+        ## Parameters
+
+        `filename` (str)
+            The path of the JSON file relative to the module.
+
+        `root_name` (str)
+            The key used in the top-level of the JSON file used to identify the
+            object which is used to initialise the Directory object.
+
+        ## Returns
+
+        A Directory object corresponding to the object defined with the
+        `root_name` key in the `filename` JSON file.
+
+        ## Examples
+
+        Consider the file `data.json` with the following contents:
+
+        ``` json
+        {
+            "project": {
+                "name": "project-name",
+                "description": "Project directory",
+                "children": [...]
+            }
+        }
+        ```
+
+        The following code converts this into nested Directory objects and 
+        renames the root Directory object to "new-project-name".
+
+        >>> directory = Directory.init_from_json("data.json", "project")
+        >>> directory.name = "new-project-name"
+        """
+
         # read json file
         with open(filename, encoding="utf-8") as file:
             data = json.load(file)
@@ -62,10 +106,12 @@ class Directory:
 
     @property
     def name(self) -> str:
+        """Get name attribute safely."""
         return self._name
 
     @name.setter
     def name(self, value: str) -> None:
+        """Set name attribute safely."""
         # check that name is unique amongst children of parent Directory
         if self.parent is not None:
             for subdir in self.parent.children:
@@ -83,6 +129,15 @@ class Directory:
 
     @property
     def level(self) -> int:
+        """
+        The number of direct ancestors between the current Directory and the
+        root Directory object.
+
+        ## Notes
+
+        - Uses the fact that the root Directory object has `parent` attribute
+        value of `None`.
+        """
         counter = 0
         ancestor = self
         while ancestor.parent is not None:
@@ -91,6 +146,15 @@ class Directory:
         return counter
 
     def _add_child(self, child: Directory) -> None:
+        """
+        Add a single child to the current Directory.
+
+        ## Notes
+
+        - `name` attribute of `child` input must be unique amongst all children
+        of the current Directory.
+        """
+
         # check that name of child is unique amongst children of this object
         for subdir in self.children:
             if subdir.name == child.name:
@@ -104,6 +168,41 @@ class Directory:
         self.children.append(child)
 
     def add_children(self, *args: Union[Directory, List[Directory]]) -> None:
+        """
+        Adds any Directory objects contained in `args` to the `children` array.
+
+        ## Parameters
+
+        `*args` (Directory or List[Directory])
+            Any number of Directory objects (or nested lists of Directory
+            objects) which must be added as subdirectories of the current
+            Directory.
+
+        ## Returns
+
+        No return value. Method inserts inputs into the `children` array
+        attribute internally.
+
+        ## Notes
+
+        - All children in the `children` array attribute are sorted
+        alphabetically by name after every call of this method. You should
+        attempt to minimise the number of calls if possible.
+        - This method calls the `_add_child()` method and so has the same
+        requirements of inputs.
+
+        ## Examples
+
+        The following code demonstrates how you can combine and list Directory
+        objects in any format and have them added to the `children` array.
+
+        >>> root_directory = Directory("root")
+        >>> dir_A = Directory("A")
+        >>> dir_B = Directory("B")
+        >>> dir_C = Directory("C")
+        >>> root_directory.add_children(dir_A, [dir_B, [dir_C]])
+        """
+
         # add children arguments
         for arg in args:
             if isinstance(arg, Directory):
