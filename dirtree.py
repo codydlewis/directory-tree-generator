@@ -238,7 +238,10 @@ class Directory:
         ancestor = self
         # must check that both parent and grandparent are not None so that
         # extra line isn't drawn
-        while ancestor.parent is not None and ancestor.parent.parent is not None:
+        while (
+            ancestor.parent is not None and
+            ancestor.parent.parent is not None
+        ):
             # add to prefix accordingly
             if ancestor.parent._is_last_child:
                 prefix = "   " + prefix
