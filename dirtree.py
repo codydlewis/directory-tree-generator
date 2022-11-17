@@ -14,7 +14,7 @@ class Directory:
     """
 
     def __init__(self, name: str) -> None:
-        self._name = name
+        self.name = name
 
     def __repr__(self) -> str:
         return f"Directory({self.name})"
