@@ -23,7 +23,7 @@ class Directory:
         self._name = name
         self.description = description
         self.icon = icon
-        self.parent = None
+        self._parent = None
         self.children = []
 
     def __repr__(self) -> str:
@@ -128,6 +128,11 @@ class Directory:
         self._name = value
 
     @property
+    def parent(self) -> Directory:
+        """Get parent attribute safely."""
+        return self._parent
+
+    @property
     def level(self) -> int:
         """
         The number of direct ancestors between the current Directory and the
@@ -163,7 +168,7 @@ class Directory:
                     f"already exists in '{self.name}'"
                 )
         # update parent attribute of child object
-        child.parent = self
+        child._parent = self
         # insert child into children array
         self.children.append(child)
 
