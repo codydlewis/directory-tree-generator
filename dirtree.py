@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 from typing import Optional, Union, List, Dict
 import json
+from math import inf
 
 
 class Directory:
@@ -230,7 +231,17 @@ class Directory:
             return None
         return self == self.parent._children[-1]
 
-    def _tree(self, levels: int = 2) -> str:
+    def tree(self, levels: int = inf) -> str:
+        """
+        Get plain text 'tree' representation of stucture as string.
+
+        ## Parameters
+
+        `levels` (int=2)
+            The number of iterations 'down' the tree to go. Consider
+            breadth-depth-search starting from the self object.
+        """
+
         # prepare prefix string
         prefix = ""
         if not self._is_root:
@@ -254,21 +265,8 @@ class Directory:
         line = f"{prefix}📁 {self.name}"
         if levels > 1:
             for child in self._children:  # add children to output (recursive)
-                line += "\n" + child._tree(levels=levels - 1)
+                line += "\n" + child.tree(levels=levels - 1)
         return line
-
-    def tree(self, levels: int = 2) -> str:
-        """
-        Get plain text 'tree' representation of stucture as string.
-
-        ## Parameters
-
-        `levels` (int=2)
-            The number of iterations 'down' the tree to go. Consider
-            breadth-depth-search starting from the self object.
-        """
-
-        return self._tree(levels=levels)
 
     def generate_tree(self, root_path: str = "") -> None:
         """
