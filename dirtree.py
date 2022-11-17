@@ -6,6 +6,8 @@ JSON file) into an actual directory tree at a defined location on your
 computer.
 """
 
+from typing import Optional
+
 
 class Directory:
     """
@@ -13,11 +15,17 @@ class Directory:
     and files.
     """
 
-    def __init__(self, name: str) -> None:
+    def __init__(
+        self, name: str, description: str = Optional[str], icon: str = "folder"
+    ) -> None:
         self.name = name
+        self.description = description
+        self.icon = icon
+        self.parent = None
+        self.children = []
 
     def __repr__(self) -> str:
-        return f"Directory({self.name})"
+        return f"Directory('{self.name}', {len(self.children)} children)"
 
 
 def main():
