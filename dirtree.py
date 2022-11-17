@@ -7,7 +7,8 @@ computer.
 """
 
 from __future__ import annotations
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Dict
+import json
 
 
 class Directory:
@@ -27,6 +28,28 @@ class Directory:
 
     def __repr__(self) -> str:
         return f"Directory('{self.name}', {len(self.children)} children)"
+
+    @staticmethod
+    def _tree_builder(obj: Dict, /) -> Directory:
+        # pop children array from input dictionary object
+        obj_children = obj.pop("children", [])
+        # create new Directory object from remaining keys in obj
+        directory = Directory(**obj)
+        # create array of Directory objects from obj_children (recursive)
+        children = [Directory._tree_builder(child) for child in obj_children]
+        # insert children into new directory object
+        directory.add_children(children)
+        return directory
+
+    @classmethod
+    def init_from_json(cls, filename: str, root_name: str) -> Directory:
+        # read json file
+        with open(filename, encoding="utf-8") as file:
+            data = json.load(file)
+        # access required root key in json object
+        root_obj = data[root_name]
+        # make Directory object using this root object
+        return cls._tree_builder(root_obj)
 
     @property
     def name(self) -> str:
@@ -85,12 +108,9 @@ class Directory:
 
 
 def main():
-    test_directory = Directory("Test")
+    test_directory = Directory.init_from_json("templates.json", "test")
 
-    test2_directory = Directory("Test2")
-    test3_directory = Directory("Test3")
-
-    test_directory.add_children(test2_directory, test3_directory)
+    print(test_directory)
 
 
 if __name__ == "__main__":
