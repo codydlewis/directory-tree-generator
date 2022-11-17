@@ -24,16 +24,16 @@ class Directory:
         self.description = description
         self.icon = icon
         self._parent = None
-        self.children = []
+        self._children = []
 
     def __repr__(self) -> str:
-        return f"Directory('{self.name}', {len(self.children)} children)"
+        return f"Directory('{self.name}', {len(self._children)} children)"
 
     def __getitem__(self, key: str) -> Directory:
         """Get child Directory object by `name` attibute of children.
         Guaranteed unique."""
 
-        for child in self.children:
+        for child in self._children:
             if child.name == key:
                 return child
         raise KeyError(
@@ -114,7 +114,7 @@ class Directory:
         """Set name attribute safely."""
         # check that name is unique amongst children of parent Directory
         if self.parent is not None:
-            for subdir in self.parent.children:
+            for subdir in self.parent._children:
                 # allow setting as own name (name is still unique)
                 if self.name == value:
                     return
@@ -161,7 +161,7 @@ class Directory:
         """
 
         # check that name of child is unique amongst children of this object
-        for subdir in self.children:
+        for subdir in self._children:
             if subdir.name == child.name:
                 raise ValueError(
                     f"A subdirectory with the name '{child.name}' "
@@ -170,7 +170,7 @@ class Directory:
         # update parent attribute of child object
         child._parent = self
         # insert child into children array
-        self.children.append(child)
+        self._children.append(child)
 
     def add_children(self, *args: Union[Directory, List[Directory]]) -> None:
         """
@@ -217,7 +217,7 @@ class Directory:
             else:
                 raise ValueError(f"Input of type '{type(arg)}' is unsupported")
         # sort children alphabetically by name attribute
-        self.children.sort(key=lambda child: child.name)
+        self._children.sort(key=lambda child: child.name)
 
 
 def main():
