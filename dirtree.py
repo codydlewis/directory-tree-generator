@@ -19,7 +19,7 @@ class Directory:
     def __init__(
         self, name: str, description: str = Optional[str], icon: str = "folder"
     ) -> None:
-        self.name = name
+        self._name = name
         self.description = description
         self.icon = icon
         self.parent = None
@@ -27,6 +27,27 @@ class Directory:
 
     def __repr__(self) -> str:
         return f"Directory('{self.name}', {len(self.children)} children)"
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        # check that name is unique amongst children of parent Directory
+        if self.parent is not None:
+            for subdir in self.parent.children:
+                # allow setting as own name (name is still unique)
+                if self.name == value:
+                    return
+                # raise error if attempting to set as existing name
+                if subdir.name == value:
+                    raise ValueError(
+                        f"A subdirectory with the name '{value}' "
+                        f"already exists in '{self.parent.name}'"
+                    )
+        # update name attribute
+        self._name = value
 
     def _add_child(self, child: Directory) -> None:
         # check that name of child is unique amongst children of this object
@@ -61,8 +82,6 @@ def main():
     test3_directory = Directory("Test3")
 
     test_directory.add_children(test2_directory, test3_directory)
-
-    print(test_directory)
 
 
 if __name__ == "__main__":
