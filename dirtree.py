@@ -7,6 +7,7 @@ computer.
 """
 
 from __future__ import annotations
+import os
 from typing import Optional, Union, List, Dict
 import json
 
@@ -261,11 +262,27 @@ class Directory:
 
         return self._tree(levels=levels)
 
+    def generate_tree(self, root_path: str = "") -> None:
+        """
+        Realise the Python object as a real directory tree structure.
+
+        ## Parameters
+
+        `root_path` (str="")
+            The path in which to generate the directory tree.
+        """
+
+        root_path = os.path.join(root_path, self.name)
+        os.mkdir(root_path)
+        for child in self._children:
+            child.generate_tree(root_path=root_path)
+
 
 def main():
     test_directory = Directory.init_from_json("templates.json", "test")
 
-    print(test_directory.tree(levels=3))
+    # print(test_directory.tree(levels=3))
+    test_directory.generate_tree()
 
 
 if __name__ == "__main__":
