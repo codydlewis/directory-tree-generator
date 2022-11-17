@@ -6,7 +6,8 @@ JSON file) into an actual directory tree at a defined location on your
 computer.
 """
 
-from typing import Optional
+from __future__ import annotations
+from typing import Optional, Union, List
 
 
 class Directory:
@@ -27,9 +28,40 @@ class Directory:
     def __repr__(self) -> str:
         return f"Directory('{self.name}', {len(self.children)} children)"
 
+    def _add_child(self, child: Directory) -> None:
+        # check that name of child is unique amongst children of this object
+        for subdir in self.children:
+            if subdir.name == child.name:
+                raise ValueError(
+                    f"A subdirectory with the name '{child.name}' "
+                    f"already exists in '{self.name}'"
+                )
+        # update parent attribute of child object
+        child.parent = self
+        # insert child into children array
+        self.children.append(child)
+
+    def add_children(self, *args: Union[Directory, List[Directory]]) -> None:
+        # add children arguments
+        for arg in args:
+            if isinstance(arg, Directory):
+                self._add_child(arg)
+            elif isinstance(arg, List[Directory]):
+                self.add_children(*arg)
+            else:
+                raise ValueError(f"Input of type '{type(arg)}' is unsupported")
+        # sort children alphabetically by name attribute
+        self.children.sort(key=lambda child: child.name)
+
 
 def main():
     test_directory = Directory("Test")
+
+    test2_directory = Directory("Test2")
+    test3_directory = Directory("Test3")
+
+    test_directory.add_children(test2_directory, test3_directory)
+
     print(test_directory)
 
 
