@@ -145,7 +145,7 @@ class Directory:
         """
         counter = 0
         ancestor = self
-        while ancestor.parent is not None:
+        while not ancestor._is_root:
             counter += 1
             ancestor = ancestor.parent
         return counter
@@ -219,11 +219,15 @@ class Directory:
         # sort children alphabetically by name attribute
         self._children.sort(key=lambda child: child.name)
 
+    @property
+    def _is_root(self) -> bool:
+        return self.parent is None
+
 
 def main():
     test_directory = Directory.init_from_json("templates.json", "test")
 
-    print(test_directory["Test A"]["T"])
+    print(test_directory["Test A"]["Test A.1"].level)
 
 
 if __name__ == "__main__":
