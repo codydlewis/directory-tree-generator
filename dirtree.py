@@ -49,6 +49,15 @@ class Directory:
         # update name attribute
         self._name = value
 
+    @property
+    def level(self) -> int:
+        counter = 0
+        ancestor = self
+        while ancestor.parent is not None:
+            counter += 1
+            ancestor = ancestor.parent
+        return counter
+
     def _add_child(self, child: Directory) -> None:
         # check that name of child is unique amongst children of this object
         for subdir in self.children:
