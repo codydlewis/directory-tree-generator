@@ -258,7 +258,15 @@ class Directory:
         return line
 
     def tree(self, levels: int = 2) -> str:
-        """Get plain text 'tree' representation of stucture as string."""
+        """
+        Get plain text 'tree' representation of stucture as string.
+
+        ## Parameters
+
+        `levels` (int=2)
+            The number of iterations 'down' the tree to go. Consider
+            breadth-depth-search starting from the self object.
+        """
 
         return self._tree(levels=levels)
 
