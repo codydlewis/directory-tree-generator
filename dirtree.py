@@ -7,10 +7,19 @@ computer.
 """
 
 from __future__ import annotations
+import datetime
 import os
 from typing import Optional, Union, List, Dict
 import json
 from math import inf
+from urllib.parse import quote
+
+
+def replace_all(string: str, mapping: dict) -> str:
+    for key, value in mapping.items():
+        value = "" if value is None else value
+        string = string.replace(key, value)
+    return string
 
 
 class Directory:
@@ -20,7 +29,8 @@ class Directory:
     """
 
     def __init__(
-        self, name: str, description: str = Optional[str], icon: str = "folder"
+        self, name: str, description: Optional[str] = None,
+        icon: str = "folder"
     ) -> None:
         self._name = name
         self.description = description
@@ -268,6 +278,55 @@ class Directory:
                 line += "\n" + child.tree(levels=levels - 1)
         return line
 
+    @property
+    def ancestors(self) -> List[Directory]:
+        """Returns a list of ancestors from root to current directory
+        (inclusive)."""
+
+        if self._is_root:
+            return [self]
+        return self.parent.ancestors + [self]
+
+    def _generate_readme(self, template_path: str, directory_path: str) -> str:
+        # get readme template file
+        with open(template_path, encoding="utf-8") as template_file:
+            readme_contents = template_file.read()
+
+        # replace variables in template to produce final readme string
+        readme_contents = replace_all(readme_contents, {
+            "[DIRECTORY_NAME]": self.name,
+            "[DIRECTORY_ICON]": self.icon,
+            "[DIRECTORY_DESCRIPTION]": self.description,
+            "[DATE_CREATED]": datetime.datetime.isoformat(
+                datetime.datetime.now(), sep=" ", timespec="minutes"),
+            "[DATE_MODIFIED]": datetime.datetime.isoformat(
+                datetime.datetime.now(), sep=" ", timespec="minutes"),
+            "[DIRECTORY_PATH]": (
+                ' > '.join([
+                    (
+                        f'<i class="bx bx-{ancestor.icon}"></i> '
+                        f'**[{ancestor.name}]('
+                        f'{"../" * (len(self.ancestors) - index)}'
+                        f'{quote(ancestor.name)}/README.md)**'
+                    ) for index, ancestor in enumerate(self.ancestors)
+                ])
+            ),
+            "[SUBDIRECTORIES]": (
+                '\n'.join([
+                    (
+                        f'  - <i class="bx bx-{child.icon}"></i> '
+                        f'**[{child.name}]({quote(child.name)}/README.md)**: '
+                        f'{child.description}'
+                    ) for child in self._children
+                ])
+            ),
+        })
+
+        # write to file at path
+        readme_path = os.path.join(directory_path, "README.md")
+        with open(readme_path, mode="w", encoding="utf-8") as readme_file:
+            readme_file.write(readme_contents)
+
     def generate_tree(self, root_path: str = "") -> None:
         """
         Realise the Python object as a real directory tree structure.
@@ -282,6 +341,8 @@ class Directory:
         os.mkdir(root_path)
         for child in self._children:
             child.generate_tree(root_path=root_path)
+        # create readme
+        self._generate_readme("readme-template.txt", root_path)
 
 
 def main():

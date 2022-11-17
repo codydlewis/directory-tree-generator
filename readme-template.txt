@@ -1,0 +1,11 @@
+# <i class="bx bx-[DIRECTORY_ICON]"></i> [DIRECTORY_NAME]
+
+[DIRECTORY_DESCRIPTION]
+
+## Contents
+
+Created: [DATE_CREATED]
+Modified: [DATE_MODIFIED]
+
+[DIRECTORY_PATH]
+[SUBDIRECTORIES]
