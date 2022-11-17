@@ -223,6 +223,12 @@ class Directory:
     def _is_root(self) -> bool:
         return self.parent is None
 
+    @property
+    def _is_last_child(self) -> bool:
+        if self.parent is None:
+            return None
+        return self == self.parent._children[-1]
+
 
 def main():
     test_directory = Directory.init_from_json("templates.json", "test")

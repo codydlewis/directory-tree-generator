@@ -1,0 +1,58 @@
+{
+  "test": {
+    "name": "Test",
+    "icon": "folder",
+    "description": "This is a test folder.",
+    "children": [
+      {
+        "name": "Test A",
+        "children": [
+          {
+            "name": "Test A.1"
+          },
+          {
+            "name": "Test A.2"
+          },
+          {
+            "name": "Test A.3",
+            "children": [
+              {
+                "name": "Test A.3.1",
+                "children": [
+                  {
+                    "name": "Test A.3.1.1"
+                  },
+                  {
+                    "name": "Test A.3.1.2"
+                  },
+                  {
+                    "name": "Test A.3.1.3"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Test B"
+      },
+      {
+        "name": "Test C",
+        "children": [
+          {
+            "name": "Test C.1"
+          },
+          {
+            "name": "Test C.2",
+            "children": [
+                {
+                    "name": "Test C.2.1"
+                }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
