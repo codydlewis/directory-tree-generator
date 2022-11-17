@@ -99,7 +99,7 @@ class Directory:
         for arg in args:
             if isinstance(arg, Directory):
                 self._add_child(arg)
-            elif isinstance(arg, List[Directory]):
+            elif isinstance(arg, list):
                 self.add_children(*arg)
             else:
                 raise ValueError(f"Input of type '{type(arg)}' is unsupported")
