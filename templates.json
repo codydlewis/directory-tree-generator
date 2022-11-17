@@ -2,10 +2,12 @@
   "test": {
     "name": "Test",
     "icon": "folder",
-    "description": "This is a test folder.",
+    "description": "Occaecat voluptate veniam duis sit quis pariatur consequat. Cillum nulla ex nisi reprehenderit aliquip nostrud non eiusmod deserunt. Exercitation Lorem cillum esse ea reprehenderit eiusmod nulla consequat ex in aliquip voluptate sunt ut.",
     "children": [
       {
         "name": "Test A",
+        "icon": "book",
+        "description": "Esse fugiat labore cillum elit. Magna incididunt nisi qui laborum laboris.",
         "children": [
           {
             "name": "Test A.1"
@@ -35,10 +37,14 @@
         ]
       },
       {
-        "name": "Test B"
+        "name": "Test B",
+        "icon": "archive",
+        "description": "Quis in quis est labore esse aliquip non labore aliqua consectetur dolore."
       },
       {
         "name": "Test C",
+        "icon": "test-tube",
+        "description": "Eiusmod reprehenderit qui quis enim et. Irure eu aliquip non labore aliqua esse id proident voluptate ut Lorem duis fugiat.",
         "children": [
           {
             "name": "Test C.1"
@@ -46,9 +52,9 @@
           {
             "name": "Test C.2",
             "children": [
-                {
-                    "name": "Test C.2.1"
-                }
+              {
+                "name": "Test C.2.1"
+              }
             ]
           }
         ]
