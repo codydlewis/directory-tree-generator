@@ -89,7 +89,7 @@ class Directory:
         }
         ```
 
-        The following code converts this into nested Directory objects and 
+        The following code converts this into nested Directory objects and
         renames the root Directory object to "new-project-name".
 
         >>> directory = Directory.init_from_json("data.json", "project")
