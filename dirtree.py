@@ -229,11 +229,40 @@ class Directory:
             return None
         return self == self.parent._children[-1]
 
+    def _tree(self, levels: int = 2) -> str:
+        # prepare prefix string
+        prefix = ""
+        if not self._is_root:
+            prefix += "└─ " if self._is_last_child else "├─ "
+        # iterate up ancestry tree until root
+        ancestor = self
+        # must check that both parent and grandparent are not None so that
+        # extra line isn't drawn
+        while ancestor.parent is not None and ancestor.parent.parent is not None:
+            # add to prefix accordingly
+            if ancestor.parent._is_last_child:
+                prefix = "   " + prefix
+            else:
+                prefix = "│  " + prefix
+            # get next ancestor
+            ancestor = ancestor.parent
+        # construct 'tree' string output
+        line = f"{prefix}📁 {self.name}"
+        if levels > 1:
+            for child in self._children:  # add children to output (recursive)
+                line += "\n" + child._tree(levels=levels - 1)
+        return line
+
+    def tree(self, levels: int = 2) -> str:
+        """Get plain text 'tree' representation of stucture as string."""
+
+        return self._tree(levels=levels)
+
 
 def main():
     test_directory = Directory.init_from_json("templates.json", "test")
 
-    print(test_directory["Test A"]["Test A.1"].level)
+    print(test_directory.tree(levels=3))
 
 
 if __name__ == "__main__":
