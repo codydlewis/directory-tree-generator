@@ -1,13 +1,13 @@
 {
   "test": {
     "name": "Test",
-    "icon": "folder",
+    "icon": "bx-folder",
     "tags": ["Cillum", "Reprehenderit", "Voluptate"],
     "description": "Occaecat voluptate veniam duis sit quis pariatur consequat. Cillum nulla ex nisi reprehenderit aliquip nostrud non eiusmod deserunt. Exercitation Lorem cillum esse ea reprehenderit eiusmod nulla consequat ex in aliquip voluptate sunt ut.",
     "children": [
       {
         "name": "Test A",
-        "icon": "book",
+        "icon": "bx-book",
         "description": "Esse fugiat labore cillum elit. Magna incididunt nisi qui laborum laboris.",
         "children": [
           {
@@ -39,12 +39,12 @@
       },
       {
         "name": "Test B",
-        "icon": "archive",
+        "icon": "bx-archive",
         "description": "Quis in quis est labore esse aliquip non labore aliqua consectetur dolore."
       },
       {
         "name": "Test C",
-        "icon": "test-tube",
+        "icon": "bx-test-tube",
         "description": "Eiusmod reprehenderit qui quis enim et. Irure eu aliquip non labore aliqua esse id proident voluptate ut Lorem duis fugiat.",
         "children": [
           {

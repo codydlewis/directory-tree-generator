@@ -30,7 +30,7 @@ class Directory:
 
     def __init__(
         self, name: str, description: Optional[str] = None,
-        icon: str = "folder", tags: List[str] = None
+        icon: str = "bx-folder", tags: List[str] = None
     ) -> None:
         self._name = name
         self.description = description
@@ -318,7 +318,7 @@ class Directory:
             "[DIRECTORY_PATH]": (
                 '- ' + ' > '.join([
                     (
-                        f'<i class="bx bx-{ancestor.icon}"></i> '
+                        f'<i class="bx {ancestor.icon}"></i> '
                         f'**[{ancestor.name}]('
                         f'{"../" * (len(self.ancestors) - index)}'
                         f'{quote(ancestor.name)}/README.md)**'
@@ -328,7 +328,7 @@ class Directory:
             "[SUBDIRECTORIES]": (
                 '\n'.join([
                     (
-                        f'  - <i class="bx bx-{child.icon}"></i> '
+                        f'  - <i class="bx {child.icon}"></i> '
                         f'**[{child.name}]({quote(child.name)}/README.md)**: '
                         f'{child.description}'
                     ) for child in self._children

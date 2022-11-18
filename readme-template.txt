@@ -2,7 +2,7 @@
 [DIRECTORY_FRONTMATTER]
 ---
 
-# <i class="bx bx-[DIRECTORY_ICON]"></i> [DIRECTORY_NAME]
+# <i class="bx [DIRECTORY_ICON]"></i> [DIRECTORY_NAME]
 
 [DIRECTORY_TAGS_LIST]
 
