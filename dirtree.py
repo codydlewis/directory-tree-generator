@@ -287,22 +287,26 @@ class Directory:
             return [self]
         return self.parent.ancestors + [self]
 
-    def _generate_readme(self, template_path: str, directory_path: str) -> str:
+    def _generate_readme(
+        self, template_path: str, directory_path: str,
+        custom_placeholders: dict
+    ) -> str:
         # get readme template file
         with open(template_path, encoding="utf-8") as template_file:
             readme_contents = template_file.read()
 
         # replace variables in template to produce final readme string
-        readme_contents = replace_all(readme_contents, {
+        replacements = {
             "[DIRECTORY_NAME]": self.name,
             "[DIRECTORY_ICON]": self.icon,
             "[DIRECTORY_DESCRIPTION]": self.description,
-            "[DATE_CREATED]": datetime.datetime.isoformat(
-                datetime.datetime.now(), sep=" ", timespec="minutes"),
-            "[DATE_MODIFIED]": datetime.datetime.isoformat(
+            "[CURRENT_DATE]": datetime.date.today().isoformat(),
+            "[CURRENT_TIME]": datetime.datetime.now().time().isoformat(
+                timespec="seconds"),
+            "[CURRENT_DATETIME]": datetime.datetime.isoformat(
                 datetime.datetime.now(), sep=" ", timespec="minutes"),
             "[DIRECTORY_PATH]": (
-                ' > '.join([
+                '- ' + ' > '.join([
                     (
                         f'<i class="bx bx-{ancestor.icon}"></i> '
                         f'**[{ancestor.name}]('
@@ -320,14 +324,18 @@ class Directory:
                     ) for child in self._children
                 ])
             ),
-        })
+        }
+        replacements |= custom_placeholders
+        readme_contents = replace_all(readme_contents, replacements)
 
         # write to file at path
         readme_path = os.path.join(directory_path, "README.md")
         with open(readme_path, mode="w", encoding="utf-8") as readme_file:
             readme_file.write(readme_contents)
 
-    def generate_tree(self, root_path: str = "") -> None:
+    def generate_tree(
+        self, root_path: str = "", custom_placeholders: dict = None
+    ) -> None:
         """
         Realise the Python object as a real directory tree structure.
 
@@ -337,12 +345,18 @@ class Directory:
             The path in which to generate the directory tree.
         """
 
+        # make custom_placeholders default to empty dictionary
+        if custom_placeholders is None:
+            custom_placeholders = {}
+
         root_path = os.path.join(root_path, self.name)
         os.mkdir(root_path)
         for child in self._children:
-            child.generate_tree(root_path=root_path)
+            child.generate_tree(
+                root_path=root_path, custom_placeholders=custom_placeholders)
         # create readme
-        self._generate_readme("readme-template.txt", root_path)
+        self._generate_readme(
+            "readme-template.txt", root_path, custom_placeholders)
 
 
 def main():

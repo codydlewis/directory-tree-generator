@@ -4,8 +4,8 @@
 
 ## Contents
 
-Created: [DATE_CREATED]
-Modified: [DATE_MODIFIED]
+Created: [CURRENT_DATETIME]
+Modified: [CURRENT_DATETIME]
 
 [DIRECTORY_PATH]
 [SUBDIRECTORIES]
