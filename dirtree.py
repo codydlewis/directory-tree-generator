@@ -15,7 +15,22 @@ from math import inf
 from urllib.parse import quote
 
 
-def replace_all(string: str, mapping: dict) -> str:
+def replace_all(string: str, mapping: Dict[str, str]) -> str:
+    """
+    Replace all keys with values from `mapping` in `string`.
+
+    ## Parameters
+
+    `string` (str)
+        The string which replacements within are to be made.
+
+    `mapping` (Dict[str, str])
+        The replacements to make in `string`. Keys in the dictionary
+        correspond to substrings which are matched in `string`, and values in
+        the dictionary are substrings which replace the corresponding key in
+        `string`.
+    """
+
     for key, value in mapping.items():
         value = "" if value is None else value
         string = string.replace(key, value)
