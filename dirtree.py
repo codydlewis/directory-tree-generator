@@ -304,6 +304,12 @@ class Directory:
             "[DIRECTORY_TAGS_LIST]": (
                 f"`{'`, `'.join(self.tags)}`"
             ) if len(self.tags) > 0 else "",
+            "[DIRECTORY_FRONTMATTER]": (
+                f'directory_name: {self.name}\n'
+                f'directory_icon: {self.icon}\n'
+                f'directory_description: {self.description}\n'
+                f'directory_tags_list: {self.tags}'
+            ),
             "[CURRENT_DATE]": datetime.date.today().isoformat(),
             "[CURRENT_TIME]": datetime.datetime.now().time().isoformat(
                 timespec="seconds"),
