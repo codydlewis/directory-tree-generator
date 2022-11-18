@@ -1,5 +1,7 @@
 # <i class="bx bx-[DIRECTORY_ICON]"></i> [DIRECTORY_NAME]
 
+[DIRECTORY_TAGS_LIST]
+
 [DIRECTORY_DESCRIPTION]
 
 ## Contents

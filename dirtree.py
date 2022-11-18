@@ -30,11 +30,12 @@ class Directory:
 
     def __init__(
         self, name: str, description: Optional[str] = None,
-        icon: str = "folder"
+        icon: str = "folder", tags: List[str] = None
     ) -> None:
         self._name = name
         self.description = description
         self.icon = icon
+        self.tags = [] if tags is None else tags
         self._parent = None
         self._children = []
 
@@ -300,6 +301,9 @@ class Directory:
             "[DIRECTORY_NAME]": self.name,
             "[DIRECTORY_ICON]": self.icon,
             "[DIRECTORY_DESCRIPTION]": self.description,
+            "[DIRECTORY_TAGS_LIST]": (
+                f"`{'`, `'.join(self.tags)}`"
+            ) if len(self.tags) > 0 else "",
             "[CURRENT_DATE]": datetime.date.today().isoformat(),
             "[CURRENT_TIME]": datetime.datetime.now().time().isoformat(
                 timespec="seconds"),
