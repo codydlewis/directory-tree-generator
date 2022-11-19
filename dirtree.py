@@ -13,6 +13,7 @@ from typing import Optional, Union, List, Dict
 import json
 from math import inf
 from urllib.parse import quote
+import re
 
 
 def replace_all(string: str, mapping: Dict[str, str]) -> str:
@@ -349,6 +350,9 @@ class Directory:
         }
         replacements |= custom_placeholders
         readme_contents = replace_all(readme_contents, replacements)
+
+        # replace all 'extra' newlines with only a double newline
+        readme_contents = re.sub("\n{3,}", "\n\n", readme_contents)
 
         # write to file at path
         readme_path = os.path.join(directory_path, "README.md")
