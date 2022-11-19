@@ -330,7 +330,7 @@ class Directory:
                 timespec="seconds"),
             "[CURRENT_DATETIME]": datetime.datetime.isoformat(
                 datetime.datetime.now(), sep=" ", timespec="minutes"),
-            "[DIRECTORY_PATH]": (
+            "[DIRECTORY_CONTENTS]": (
                 '- ' + ' > '.join([
                     (
                         f'<i class="bx {ancestor.icon}"></i> '
@@ -338,10 +338,7 @@ class Directory:
                         f'{"../" * (len(self.ancestors) - index)}'
                         f'{quote(ancestor.name)}/README.md)**'
                     ) for index, ancestor in enumerate(self.ancestors)
-                ])
-            ),
-            "[SUBDIRECTORIES]": (
-                '\n'.join([
+                ]) + '\n' + '\n'.join([
                     (
                         f'  - <i class="bx {child.icon}"></i> '
                         f'**[{child.name}]({quote(child.name)}/README.md)**: '
