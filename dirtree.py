@@ -317,7 +317,7 @@ class Directory:
             "[DIRECTORY_ICON]": self.icon,
             "[DIRECTORY_DESCRIPTION]": self.description,
             "[DIRECTORY_TAGS_LIST]": (
-                f"`{'`, `'.join(self.tags)}`"
+                f"`{'` `'.join(self.tags)}`"
             ) if len(self.tags) > 0 else "",
             "[DIRECTORY_FRONTMATTER]": (
                 f'directory_name: {self.name}\n'
