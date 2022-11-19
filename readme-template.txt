@@ -10,7 +10,7 @@
 
 ## Contents
 
-Created: [CURRENT_DATETIME]
-Modified: [CURRENT_DATETIME]
+**Created:** [CURRENT_DATETIME]
+**Modified:** [CURRENT_DATETIME]
 
 [DIRECTORY_CONTENTS]
