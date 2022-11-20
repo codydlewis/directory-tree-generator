@@ -74,11 +74,13 @@ class Directory:
     @property
     def name(self) -> str:
         """Get name attribute safely."""
+        
         return self._name
 
     @name.setter
     def name(self, value: str) -> None:
         """Set name attribute safely."""
+
         # check that name is unique amongst children of parent Directory
         if self.parent is not None:
             for subdir in self.parent._children:
@@ -97,28 +99,25 @@ class Directory:
     @property
     def parent(self) -> Directory:
         """Get parent attribute safely."""
+
         return self._parent
 
     @property
     def level(self) -> int:
         """
         The number of direct ancestors between the current Directory and the
-        root Directory object.
-
-        ## Notes
-
-        - Uses the fact that the root Directory object has `parent` attribute
-        value of `None`.
+        root Directory object. The root directory is 0.
         """
-        counter = 0
-        ancestor = self
-        while not ancestor._is_root:
-            counter += 1
-            ancestor = ancestor.parent
-        return counter
+
+        return len(self.ancestors) - 1
 
     @property
-    def _is_root(self) -> bool:
+    def is_root(self) -> bool:
+        """
+        Whether the directory is the 'root' of the current directory 'tree'. In
+        other words, does this directory not have a parent directory?
+        """
+
         return self.parent is None
 
     @property
@@ -128,13 +127,37 @@ class Directory:
         return self == self.parent._children[-1]
 
     @property
-    def ancestors(self) -> List[Directory]:
-        """Returns a list of ancestors from root to current directory
-        (inclusive)."""
+    def is_leaf(self) -> bool:
+        """
+        Whether the directory is the 'leaf' of that branch, i.e., does the
+        directory have any children itself?
+        """
 
-        if self._is_root:
+        return len(self._children) == 0
+
+    @property
+    def ancestors(self) -> List[Directory]:
+        """
+        Returns a list of ancestors from root to current directory
+        (inclusive).
+        """
+
+        if self.is_root:
             return [self]
         return self.parent.ancestors + [self]
+
+    @property
+    def siblings(self) -> List[Directory]:
+        """
+        Returns a list of directories which share the same parent directory
+        with this directory. Does not include the current directory.
+        """
+
+        if self.is_root:
+            return []
+        res = set(self.parent._children)
+        res.discard(self)
+        return list(res)
 
     @staticmethod
     def _build_from_object(obj: Dict, /) -> Directory:
@@ -408,7 +431,7 @@ class Directory:
 
         # prepare prefix string
         prefix = ""
-        if not self._is_root:
+        if not self.is_root:
             prefix += "└─ " if self._is_last_child else "├─ "
         # iterate up ancestry tree until root
         ancestor = self
