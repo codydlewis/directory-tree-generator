@@ -72,7 +72,7 @@ class Directory:
         )
 
     @staticmethod
-    def _tree_builder_from_object(obj: Dict, /) -> Directory:
+    def _build_from_object(obj: Dict, /) -> Directory:
         """Recursively construct Directory objects from dictionaries."""
 
         # pop children array from input dictionary object
@@ -81,14 +81,14 @@ class Directory:
         directory = Directory(**obj)
         # create array of Directory objects from obj_children (recursive)
         children = [
-            Directory._tree_builder_from_object(child)
+            Directory._build_from_object(child)
             for child in obj_children]
         # insert children into new directory object
         directory.add_children(children)
         return directory
 
     @classmethod
-    def init_from_json(cls, filename: str, root_name: str) -> Directory:
+    def import_json(cls, filename: str, root_name: str) -> Directory:
         """
         Initialise Directory object from JSON file. Adds all subsequent
         descendent Directory objects using recursion.
@@ -124,7 +124,7 @@ class Directory:
         The following code converts this into nested Directory objects and
         renames the root Directory object to "new-project-name".
 
-        >>> directory = Directory.init_from_json("data.json", "project")
+        >>> directory = Directory.import_json("data.json", "project")
         >>> directory.name = "new-project-name"
         """
 
@@ -134,10 +134,10 @@ class Directory:
         # access required root key in json object
         root_obj = data[root_name]
         # make Directory object using this root object
-        return cls._tree_builder_from_object(root_obj)
+        return cls._build_from_object(root_obj)
 
     @classmethod
-    def init_from_yaml(cls, filename: str, root_name: str) -> Directory:
+    def import_yaml(cls, filename: str, root_name: str) -> Directory:
         """
         Initialise Directory object from YAML file. Adds all subsequent
         descendent Directory objects using recursion.
@@ -170,7 +170,7 @@ class Directory:
         The following code converts this into nested Directory objects and
         renames the root Directory object to "new-project-name".
 
-        >>> directory = Directory.init_from_yaml("data.yaml", "project")
+        >>> directory = Directory.import_yaml("data.yaml", "project")
         >>> directory.name = "new-project-name"
         """
 
@@ -180,10 +180,10 @@ class Directory:
         # access required root key in json object
         root_obj = data[root_name]
         # make Directory object using this root object
-        return cls._tree_builder_from_object(root_obj)
+        return cls._build_from_object(root_obj)
 
     @staticmethod
-    def _tree_builder_from_directory(path: str):
+    def _build_from_directory(path: str):
         # create Directory object with name as last directory in path
         directory = Directory(os.path.split(path)[-1])
         # ----- children
@@ -195,7 +195,7 @@ class Directory:
         ]
         # create list of children Directories (recursive)
         children = [
-            Directory._tree_builder_from_directory(child_path)
+            Directory._build_from_directory(child_path)
             for child_path in children_paths
         ]
         # add children to this directory
@@ -235,7 +235,7 @@ class Directory:
         return directory
 
     @classmethod
-    def init_from_directory(cls, root_path: str) -> Directory:
+    def import_directory(cls, root_path: str) -> Directory:
         """
         Initialise Directory object from real directory. Adds all subsequent
         descendent Directory objects using recursion.
@@ -256,10 +256,10 @@ class Directory:
         The following code converts the directory with name "project" into a
         Directory object.
 
-        >>> directory = Directory.init_from_directory("project")
+        >>> directory = Directory.import_directory("project")
         """
 
-        return Directory._tree_builder_from_directory(root_path)
+        return Directory._build_from_directory(root_path)
 
     @property
     def name(self) -> str:
@@ -487,7 +487,7 @@ class Directory:
         with open(readme_path, mode="w", encoding="utf-8") as readme_file:
             readme_file.write(readme_contents)
 
-    def export_tree(
+    def export_directory(
         self, root_path: str = "", custom_placeholders: dict = None
     ) -> None:
         """
@@ -506,8 +506,35 @@ class Directory:
         root_path = os.path.join(root_path, self.name)
         os.mkdir(root_path)
         for child in self._children:
-            child.export_tree(
+            child.export_directory(
                 root_path=root_path, custom_placeholders=custom_placeholders)
         # create readme
         self._export_readme(
             "readme-template.txt", root_path, custom_placeholders)
+
+    def _objectify(self) -> dict:
+        return {
+            "name": self.name,
+            "icon": self.icon,
+            "description": self.description,
+            "tags": self.tags,
+            "children": [child._objectify() for child in self._children]
+        }
+
+    def export_yaml(self, filename: str, root_name: str = "root") -> None:
+        """
+        Exports the python Directory object as a YAML file saved at `filename`
+        under the root-level name `root_name`.
+        """
+
+        with open(filename, mode="w", encoding="utf-8") as file:
+            yaml.dump({root_name: self._objectify()}, file)
+
+    def export_json(self, filename: str, root_name: str = "root") -> None:
+        """
+        Eports the python Directory object as a JSON file save at `filename`
+        under the root-level name `root_name`.
+        """
+
+        with open(filename, mode="w", encoding="utf-8") as file:
+            file.write(json.dumps({root_name: self._objectify()}))
