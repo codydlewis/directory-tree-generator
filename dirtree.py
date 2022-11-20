@@ -9,7 +9,7 @@ computer.
 from __future__ import annotations
 import datetime
 import os
-from typing import Optional, Union, List, Dict
+from typing import Optional, Union, List, Dict, Literal
 import json
 from math import inf
 from urllib.parse import quote
@@ -521,14 +521,38 @@ class Directory:
             "children": [child._objectify() for child in self._children]
         }
 
-    def export_yaml(self, filename: str, root_name: str = "root") -> None:
+    def export_yaml(
+        self, filename: str, root_name: str = "root",
+        existing_file_method: Literal["add", "overwrite", "error"] = "add"
+    ) -> None:
         """
         Exports the python Directory object as a YAML file saved at `filename`
         under the root-level name `root_name`.
         """
 
-        with open(filename, mode="w", encoding="utf-8") as file:
-            yaml.dump({root_name: self._objectify()}, file)
+        # add to existing file
+        if os.path.exists(filename) and existing_file_method == "add":
+            # read existing file
+            with open(filename, encoding="utf-8") as file:
+                yaml_data: dict = yaml.safe_load(file)
+            # add self object to existing file contents
+            if root_name in yaml_data.keys():
+                raise ValueError(
+                    f"Name '{root_name}' already exists in '{filename}'"
+                )
+            yaml_data[root_name] = self._objectify()
+            # export everything back into file
+            with open(filename, mode="w", encoding="utf-8") as file:
+                yaml.dump(yaml_data, file)
+        # raise error for attempting to overwrite existing file
+        elif os.path.exists(filename) and existing_file_method == "error":
+            raise FileExistsError(
+                f"Attempting to overwrite contents of {filename}\n"
+                f"when existing_file_method is 'error'")
+        # write to new file
+        else:
+            with open(filename, mode="w", encoding="utf-8") as file:
+                yaml.dump({root_name: self._objectify()}, file)
 
     def export_json(self, filename: str, root_name: str = "root") -> None:
         """
