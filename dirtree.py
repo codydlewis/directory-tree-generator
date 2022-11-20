@@ -136,6 +136,52 @@ class Directory:
         # make Directory object using this root object
         return cls._tree_builder_from_object(root_obj)
 
+    @classmethod
+    def init_from_yaml(cls, filename: str, root_name: str) -> Directory:
+        """
+        Initialise Directory object from YAML file. Adds all subsequent
+        descendent Directory objects using recursion.
+
+        ## Parameters
+
+        `filename` (str)
+            The path of the YAML file relative to the module.
+
+        `root_name` (str)
+            The key used in the top-level of the YAML file used to identify the
+            object which is used to initialise the Directory object.
+
+        ## Returns
+
+        A Directory object corresponding to the object defined with the
+        `root_name` key in the `filename` YAML file.
+
+        ## Examples
+
+        Consider the file `data.yaml` with the following contents:
+
+        ``` yaml
+        project:
+            name: project-name
+            description: Project directory
+            children: [...]
+        ```
+
+        The following code converts this into nested Directory objects and
+        renames the root Directory object to "new-project-name".
+
+        >>> directory = Directory.init_from_yaml("data.yaml", "project")
+        >>> directory.name = "new-project-name"
+        """
+
+        # read json file
+        with open(filename, encoding="utf-8") as file:
+            data = yaml.safe_load(file)
+        # access required root key in json object
+        root_obj = data[root_name]
+        # make Directory object using this root object
+        return cls._tree_builder_from_object(root_obj)
+
     @staticmethod
     def _tree_builder_from_directory(path: str):
         # create Directory object with name as last directory in path
@@ -468,9 +514,9 @@ class Directory:
 
 
 def main():
-    test_directory = Directory.init_from_json("templates.json", "test")
+    test_directory = Directory.init_from_yaml("templates.yaml", "test")
 
-    # print(test_directory.tree(levels=3))
+    print(test_directory.tree())
     test_directory.export_tree()
 
 
