@@ -554,11 +554,35 @@ class Directory:
             with open(filename, mode="w", encoding="utf-8") as file:
                 yaml.dump({root_name: self._objectify()}, file)
 
-    def export_json(self, filename: str, root_name: str = "root") -> None:
+    def export_json(
+        self, filename: str, root_name: str = "root",
+        existing_file_method: Literal["add", "overwrite", "error"] = "add"
+    ) -> None:
         """
         Eports the python Directory object as a JSON file save at `filename`
         under the root-level name `root_name`.
         """
 
-        with open(filename, mode="w", encoding="utf-8") as file:
-            file.write(json.dumps({root_name: self._objectify()}))
+        # add to existing file
+        if os.path.exists(filename) and existing_file_method == "add":
+            # read existing file
+            with open(filename, encoding="utf-8") as file:
+                json_data: dict = json.load(file)
+            # add self object to existing file contents
+            if root_name in json_data.keys():
+                raise ValueError(
+                    f"Name '{root_name}' already exists in '{filename}'"
+                )
+            json_data[root_name] = self._objectify()
+            # export everything back into file
+            with open(filename, mode="w", encoding="utf-8") as file:
+                file.write(json.dumps(json_data))
+        # raise error for attempting to overwrite existing file
+        elif os.path.exists(filename) and existing_file_method == "error":
+            raise FileExistsError(
+                f"Attempting to overwrite contents of {filename}\n"
+                f"when existing_file_method is 'error'")
+        # write to new file
+        else:
+            with open(filename, mode="w", encoding="utf-8") as file:
+                file.write(json.dumps({root_name: self._objectify()}))
