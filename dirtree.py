@@ -386,7 +386,7 @@ class Directory:
             return [self]
         return self.parent.ancestors + [self]
 
-    def _generate_readme(
+    def _export_readme(
         self, template_path: str, directory_path: str,
         custom_placeholders: dict
     ) -> str:
@@ -441,7 +441,7 @@ class Directory:
         with open(readme_path, mode="w", encoding="utf-8") as readme_file:
             readme_file.write(readme_contents)
 
-    def generate_tree(
+    def export_tree(
         self, root_path: str = "", custom_placeholders: dict = None
     ) -> None:
         """
@@ -460,10 +460,10 @@ class Directory:
         root_path = os.path.join(root_path, self.name)
         os.mkdir(root_path)
         for child in self._children:
-            child.generate_tree(
+            child.export_tree(
                 root_path=root_path, custom_placeholders=custom_placeholders)
         # create readme
-        self._generate_readme(
+        self._export_readme(
             "readme-template.txt", root_path, custom_placeholders)
 
 
@@ -471,7 +471,7 @@ def main():
     test_directory = Directory.init_from_json("templates.json", "test")
 
     # print(test_directory.tree(levels=3))
-    test_directory.generate_tree()
+    test_directory.export_tree()
 
 
 if __name__ == "__main__":
