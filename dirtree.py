@@ -14,6 +14,7 @@ import json
 from math import inf
 from urllib.parse import quote
 import re
+import yaml
 
 
 def replace_all(string: str, mapping: Dict[str, str]) -> str:
@@ -71,7 +72,7 @@ class Directory:
         )
 
     @staticmethod
-    def _tree_builder(obj: Dict, /) -> Directory:
+    def _tree_builder_from_object(obj: Dict, /) -> Directory:
         """Recursively construct Directory objects from dictionaries."""
 
         # pop children array from input dictionary object
@@ -79,7 +80,9 @@ class Directory:
         # create new Directory object from remaining keys in obj
         directory = Directory(**obj)
         # create array of Directory objects from obj_children (recursive)
-        children = [Directory._tree_builder(child) for child in obj_children]
+        children = [
+            Directory._tree_builder_from_object(child)
+            for child in obj_children]
         # insert children into new directory object
         directory.add_children(children)
         return directory
@@ -131,7 +134,86 @@ class Directory:
         # access required root key in json object
         root_obj = data[root_name]
         # make Directory object using this root object
-        return cls._tree_builder(root_obj)
+        return cls._tree_builder_from_object(root_obj)
+
+    @staticmethod
+    def _tree_builder_from_directory(path: str):
+        # create Directory object with name as last directory in path
+        directory = Directory(os.path.split(path)[-1])
+        # ----- children
+        # get complete paths for all subdirectorys of the directory at path
+        children_paths = [
+            os.path.join(path, subdir)
+            for subdir in os.listdir(path)
+            if os.path.isdir(os.path.join(path, subdir))
+        ]
+        # create list of children Directories (recursive)
+        children = [
+            Directory._tree_builder_from_directory(child_path)
+            for child_path in children_paths
+        ]
+        # add children to this directory
+        directory.add_children(children)
+        # ----- details
+        # get the readme file in this direcctory
+        potential_files = [
+            subdir
+            for subdir in os.listdir(path)
+            if os.path.isfile(os.path.join(path, subdir))
+        ]
+        for file in potential_files:
+            filename_components = file.rsplit(".", maxsplit=1)
+            # check if it is a readme file
+            if filename_components[0].lower() == "readme":
+                readme_path = os.path.join(path, ".".join(filename_components))
+                # read readme file and get frontmatter
+                with open(readme_path, encoding="utf-8") as readme_file:
+                    readme_content = readme_file.read()
+                readme_frontmatter = re.match(
+                    r"---\n((.*\n)*)---\n", readme_content)
+                # check that frontmatter exists
+                if readme_frontmatter is not None:
+                    readme_frontmatter = readme_frontmatter.group(1)
+                    # parse yaml
+                    readme_yaml = yaml.safe_load(readme_frontmatter)
+                    # update directory object properties
+                    if "directory_icon" in readme_yaml.keys():
+                        directory.icon = readme_yaml["directory_icon"]
+                    if "directory_description" in readme_yaml.keys():
+                        directory.description = readme_yaml[
+                            "directory_description"]
+                    if "directory_tags" in readme_yaml.keys():
+                        directory.tags = readme_yaml["directory_tags"]
+                # only consider the first readme file
+                break
+        return directory
+
+    @classmethod
+    def init_from_directory(cls, root_path: str) -> Directory:
+        """
+        Initialise Directory object from real directory. Adds all subsequent
+        descendent Directory objects using recursion.
+
+        ## Parameters
+
+        `root_path` (str)
+            The path of the real directory relative to the module for which the
+            Directory object is to be generated from.
+
+        ## Returns
+
+        A Directory object corresponding to the directory, and all descendent
+        subdirectories, at `root_path`.
+
+        ## Examples
+
+        The following code converts the directory with name "project" into a
+        Directory object.
+
+        >>> directory = Directory.init_from_directory("project")
+        """
+
+        return Directory._tree_builder_from_directory(root_path)
 
     @property
     def name(self) -> str:
