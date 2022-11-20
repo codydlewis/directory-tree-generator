@@ -71,6 +71,71 @@ class Directory:
             f"'{key}' in '{self.name}'"
         )
 
+    @property
+    def name(self) -> str:
+        """Get name attribute safely."""
+        return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        """Set name attribute safely."""
+        # check that name is unique amongst children of parent Directory
+        if self.parent is not None:
+            for subdir in self.parent._children:
+                # allow setting as own name (name is still unique)
+                if self.name == value:
+                    return
+                # raise error if attempting to set as existing name
+                if subdir.name == value:
+                    raise ValueError(
+                        f"A subdirectory with the name '{value}' "
+                        f"already exists in '{self.parent.name}'"
+                    )
+        # update name attribute
+        self._name = value
+
+    @property
+    def parent(self) -> Directory:
+        """Get parent attribute safely."""
+        return self._parent
+
+    @property
+    def level(self) -> int:
+        """
+        The number of direct ancestors between the current Directory and the
+        root Directory object.
+
+        ## Notes
+
+        - Uses the fact that the root Directory object has `parent` attribute
+        value of `None`.
+        """
+        counter = 0
+        ancestor = self
+        while not ancestor._is_root:
+            counter += 1
+            ancestor = ancestor.parent
+        return counter
+
+    @property
+    def _is_root(self) -> bool:
+        return self.parent is None
+
+    @property
+    def _is_last_child(self) -> bool:
+        if self.parent is None:
+            return None
+        return self == self.parent._children[-1]
+
+    @property
+    def ancestors(self) -> List[Directory]:
+        """Returns a list of ancestors from root to current directory
+        (inclusive)."""
+
+        if self._is_root:
+            return [self]
+        return self.parent.ancestors + [self]
+
     @staticmethod
     def _build_from_object(obj: Dict, /) -> Directory:
         """Recursively construct Directory objects from dictionaries."""
@@ -85,6 +150,58 @@ class Directory:
             for child in obj_children]
         # insert children into new directory object
         directory.add_children(children)
+        return directory
+
+    @staticmethod
+    def _build_from_directory(path: str):
+        # create Directory object with name as last directory in path
+        directory = Directory(os.path.split(path)[-1])
+        # ----- children
+        # get complete paths for all subdirectorys of the directory at path
+        children_paths = [
+            os.path.join(path, subdir)
+            for subdir in os.listdir(path)
+            if os.path.isdir(os.path.join(path, subdir))
+        ]
+        # create list of children Directories (recursive)
+        children = [
+            Directory._build_from_directory(child_path)
+            for child_path in children_paths
+        ]
+        # add children to this directory
+        directory.add_children(children)
+        # ----- details
+        # get the readme file in this direcctory
+        potential_files = [
+            subdir
+            for subdir in os.listdir(path)
+            if os.path.isfile(os.path.join(path, subdir))
+        ]
+        for file in potential_files:
+            filename_components = file.rsplit(".", maxsplit=1)
+            # check if it is a readme file
+            if filename_components[0].lower() == "readme":
+                readme_path = os.path.join(path, ".".join(filename_components))
+                # read readme file and get frontmatter
+                with open(readme_path, encoding="utf-8") as readme_file:
+                    readme_content = readme_file.read()
+                readme_frontmatter = re.match(
+                    r"---\n((.*\n)*)---\n", readme_content)
+                # check that frontmatter exists
+                if readme_frontmatter is not None:
+                    readme_frontmatter = readme_frontmatter.group(1)
+                    # parse yaml
+                    readme_yaml = yaml.safe_load(readme_frontmatter)
+                    # update directory object properties
+                    if "directory_icon" in readme_yaml.keys():
+                        directory.icon = readme_yaml["directory_icon"]
+                    if "directory_description" in readme_yaml.keys():
+                        directory.description = readme_yaml[
+                            "directory_description"]
+                    if "directory_tags" in readme_yaml.keys():
+                        directory.tags = readme_yaml["directory_tags"]
+                # only consider the first readme file
+                break
         return directory
 
     @classmethod
@@ -182,58 +299,6 @@ class Directory:
         # make Directory object using this root object
         return cls._build_from_object(root_obj)
 
-    @staticmethod
-    def _build_from_directory(path: str):
-        # create Directory object with name as last directory in path
-        directory = Directory(os.path.split(path)[-1])
-        # ----- children
-        # get complete paths for all subdirectorys of the directory at path
-        children_paths = [
-            os.path.join(path, subdir)
-            for subdir in os.listdir(path)
-            if os.path.isdir(os.path.join(path, subdir))
-        ]
-        # create list of children Directories (recursive)
-        children = [
-            Directory._build_from_directory(child_path)
-            for child_path in children_paths
-        ]
-        # add children to this directory
-        directory.add_children(children)
-        # ----- details
-        # get the readme file in this direcctory
-        potential_files = [
-            subdir
-            for subdir in os.listdir(path)
-            if os.path.isfile(os.path.join(path, subdir))
-        ]
-        for file in potential_files:
-            filename_components = file.rsplit(".", maxsplit=1)
-            # check if it is a readme file
-            if filename_components[0].lower() == "readme":
-                readme_path = os.path.join(path, ".".join(filename_components))
-                # read readme file and get frontmatter
-                with open(readme_path, encoding="utf-8") as readme_file:
-                    readme_content = readme_file.read()
-                readme_frontmatter = re.match(
-                    r"---\n((.*\n)*)---\n", readme_content)
-                # check that frontmatter exists
-                if readme_frontmatter is not None:
-                    readme_frontmatter = readme_frontmatter.group(1)
-                    # parse yaml
-                    readme_yaml = yaml.safe_load(readme_frontmatter)
-                    # update directory object properties
-                    if "directory_icon" in readme_yaml.keys():
-                        directory.icon = readme_yaml["directory_icon"]
-                    if "directory_description" in readme_yaml.keys():
-                        directory.description = readme_yaml[
-                            "directory_description"]
-                    if "directory_tags" in readme_yaml.keys():
-                        directory.tags = readme_yaml["directory_tags"]
-                # only consider the first readme file
-                break
-        return directory
-
     @classmethod
     def import_directory(cls, root_path: str) -> Directory:
         """
@@ -260,52 +325,6 @@ class Directory:
         """
 
         return Directory._build_from_directory(root_path)
-
-    @property
-    def name(self) -> str:
-        """Get name attribute safely."""
-        return self._name
-
-    @name.setter
-    def name(self, value: str) -> None:
-        """Set name attribute safely."""
-        # check that name is unique amongst children of parent Directory
-        if self.parent is not None:
-            for subdir in self.parent._children:
-                # allow setting as own name (name is still unique)
-                if self.name == value:
-                    return
-                # raise error if attempting to set as existing name
-                if subdir.name == value:
-                    raise ValueError(
-                        f"A subdirectory with the name '{value}' "
-                        f"already exists in '{self.parent.name}'"
-                    )
-        # update name attribute
-        self._name = value
-
-    @property
-    def parent(self) -> Directory:
-        """Get parent attribute safely."""
-        return self._parent
-
-    @property
-    def level(self) -> int:
-        """
-        The number of direct ancestors between the current Directory and the
-        root Directory object.
-
-        ## Notes
-
-        - Uses the fact that the root Directory object has `parent` attribute
-        value of `None`.
-        """
-        counter = 0
-        ancestor = self
-        while not ancestor._is_root:
-            counter += 1
-            ancestor = ancestor.parent
-        return counter
 
     def _add_child(self, child: Directory) -> None:
         """
@@ -376,16 +395,6 @@ class Directory:
         # sort children alphabetically by name attribute
         self._children.sort(key=lambda child: child.name)
 
-    @property
-    def _is_root(self) -> bool:
-        return self.parent is None
-
-    @property
-    def _is_last_child(self) -> bool:
-        if self.parent is None:
-            return None
-        return self == self.parent._children[-1]
-
     def tree(self, levels: int = inf) -> str:
         """
         Get plain text 'tree' representation of stucture as string.
@@ -422,15 +431,6 @@ class Directory:
             for child in self._children:  # add children to output (recursive)
                 line += "\n" + child.tree(levels=levels - 1)
         return line
-
-    @property
-    def ancestors(self) -> List[Directory]:
-        """Returns a list of ancestors from root to current directory
-        (inclusive)."""
-
-        if self._is_root:
-            return [self]
-        return self.parent.ancestors + [self]
 
     def _export_readme(
         self, template_path: str, directory_path: str,
