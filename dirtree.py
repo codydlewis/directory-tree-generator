@@ -43,6 +43,11 @@ class Directory:
     """
     Directory objects represent digital 'folders' which contain other folders
     and files.
+
+    ## Notes
+
+    - You MUST NOT add to the `children` list property manually without using
+    the `add_children()` method for this purpose.
     """
 
     def __init__(
@@ -57,13 +62,13 @@ class Directory:
         self._children = []
 
     def __repr__(self) -> str:
-        return f"Directory('{self.name}', {len(self._children)} children)"
+        return f"Directory('{self.name}', {len(self.children)} children)"
 
     def __getitem__(self, key: str) -> Directory:
         """Get child Directory object by `name` attibute of children.
         Guaranteed unique."""
 
-        for child in self._children:
+        for child in self.children:
             if child.name == key:
                 return child
         raise KeyError(
@@ -83,7 +88,7 @@ class Directory:
 
         # check that name is unique amongst children of parent Directory
         if self.parent is not None:
-            for subdir in self.parent._children:
+            for subdir in self.parent.children:
                 # allow setting as own name (name is still unique)
                 if self.name == value:
                     return
@@ -95,6 +100,12 @@ class Directory:
                     )
         # update name attribute
         self._name = value
+
+    @property
+    def children(self) -> Directory:
+        """Get children attribute safely."""
+
+        return self._children
 
     @property
     def parent(self) -> Directory:
@@ -124,7 +135,7 @@ class Directory:
     def _is_last_child(self) -> bool:
         if self.parent is None:
             return None
-        return self == self.parent._children[-1]
+        return self == self.parent.children[-1]
 
     @property
     def is_leaf(self) -> bool:
@@ -133,7 +144,7 @@ class Directory:
         directory have any children itself?
         """
 
-        return len(self._children) == 0
+        return len(self.children) == 0
 
     @property
     def ancestors(self) -> List[Directory]:
@@ -155,7 +166,7 @@ class Directory:
 
         if self.is_root:
             return []
-        res = set(self.parent._children)
+        res = set(self.parent.children)
         res.discard(self)
         return list(res)
 
@@ -360,7 +371,7 @@ class Directory:
         """
 
         # check that name of child is unique amongst children of this object
-        for subdir in self._children:
+        for subdir in self.children:
             if subdir.name == child.name:
                 raise ValueError(
                     f"A subdirectory with the name '{child.name}' "
@@ -369,7 +380,7 @@ class Directory:
         # update parent attribute of child object
         child._parent = self
         # insert child into children array
-        self._children.append(child)
+        self.children.append(child)
 
     def add_children(self, *args: Union[Directory, List[Directory]]) -> None:
         """
@@ -416,7 +427,7 @@ class Directory:
             else:
                 raise ValueError(f"Input of type '{type(arg)}' is unsupported")
         # sort children alphabetically by name attribute
-        self._children.sort(key=lambda child: child.name)
+        self.children.sort(key=lambda child: child.name)
 
     def tree(self, levels: int = inf) -> str:
         """
@@ -451,7 +462,7 @@ class Directory:
         # construct 'tree' string output
         line = f"{prefix}📁 {self.name}"
         if levels > 1:
-            for child in self._children:  # add children to output (recursive)
+            for child in self.children:  # add children to output (recursive)
                 line += "\n" + child.tree(levels=levels - 1)
         return line
 
@@ -495,7 +506,7 @@ class Directory:
                         f'  - <i class="bx {child.icon}"></i> '
                         f'**[{child.name}]({quote(child.name)}/README.md)**: '
                         f'{child.description}'
-                    ) for child in self._children
+                    ) for child in self.children
                 ])
             ),
         }
@@ -528,7 +539,7 @@ class Directory:
 
         root_path = os.path.join(root_path, self.name)
         os.mkdir(root_path)
-        for child in self._children:
+        for child in self.children:
             child.export_directory(
                 root_path=root_path, custom_placeholders=custom_placeholders)
         # create readme
@@ -541,7 +552,7 @@ class Directory:
             "icon": self.icon,
             "description": self.description,
             "tags": self.tags,
-            "children": [child._objectify() for child in self._children]
+            "children": [child._objectify() for child in self.children]
         }
 
     def export_yaml(
